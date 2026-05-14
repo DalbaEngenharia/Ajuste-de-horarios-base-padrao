@@ -1,0 +1,157 @@
+from Biblioteca_Protheus.Protheus_Biblioteca import *
+import os
+import sys
+from datetime import date
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+
+# NOVO (auto driver)
+from webdriver_manager.chrome import ChromeDriverManager
+
+hoje = date.today()
+
+print("Hoje:", hoje)
+
+habilitar_retroativo = False
+#verifica data retroativa
+if habilitar_retroativo:
+    if hoje.day == 1:
+        print("iniciar com data retroativa")
+        dia = hoje.day - 1
+        mes = hoje.month - 1
+        ano = hoje.year
+        # se janeiro, volta para dezembro do ano anterior
+        if mes == 0:
+            mes = 12
+            ano -= 1
+        nova_data = date(ano, mes, dia)
+        print("Mês anterior:", nova_data)
+        print("Mês anterior ajustado:", nova_data.strftime("%d%m%Y"))
+        DataRetroativa =  nova_data.strftime("%d%m%Y")
+        print("Data retroativa: ", DataRetroativa)
+        DataRetroativaBool = True
+    else:
+        DataRetroativaBool = None
+        DataRetroativa = None
+        print("segue normal")
+else: 
+    DataRetroativaBool = None
+    DataRetroativa = None
+# =========================
+# CORREÇÃO CRÍTICA (AGENDADOR)
+# =========================
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+os.chdir(base_dir)
+
+
+# =========================
+# CONFIG
+# =========================
+homologacao = True
+teste = 1
+
+chrome_options = Options()
+
+# =========================
+# PERFIL
+# =========================
+profile_path = os.path.join(base_dir, "chrome_profile")
+chrome_options.add_argument(f"--user-data-dir={profile_path}")
+
+# =========================
+# MODO EXECUÇÃO
+# =========================
+if not homologacao and teste == 0:
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--window-size=1920,1080")
+    credenciais = ["robo", "robo2025"]
+
+elif not homologacao and teste == 1:
+    chrome_options.add_argument("--start-maximized")
+    credenciais = ["robo", "robo2025"]
+
+else:
+    chrome_options.add_argument("--start-maximized")
+    credenciais = ["gustavo.elicker", "123abc"]
+
+# =========================
+# ESTABILIDADE
+# =========================
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--remote-debugging-port=9222")
+
+# =========================
+# CONFIG EXTRA
+# =========================
+chrome_options.add_argument("--disable-notifications")
+chrome_options.add_argument("--disable-popup-blocking")
+chrome_options.add_argument("--disable-extensions")
+chrome_options.add_argument("--disable-infobars")
+chrome_options.add_argument("--ignore-certificate-errors")
+chrome_options.add_argument("--allow-insecure-localhost")
+chrome_options.add_argument("--use-fake-ui-for-media-stream")
+
+chrome_options.add_argument(
+    "--unsafely-treat-insecure-origin-as-secure=http://protheus.dalba.com.br:1239"
+)
+
+# =========================
+# PREFS
+# =========================
+prefs = {
+    "profile.default_content_setting_values.notifications": 2
+}
+chrome_options.add_experimental_option("prefs", prefs)
+
+# =========================
+# DRIVER (AUTO + FALLBACK)
+# =========================
+while True: 
+    try:
+        # tenta baixar automaticamente
+        service = Service(ChromeDriverManager().install())
+    except Exception as e:
+        print("Erro ao baixar driver automático:", e)
+        print("Usando driver local...")
+
+        driver_path = os.path.join(base_dir, "chromedriver.exe")
+        service = Service(driver_path)
+
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    wait = WebDriverWait(driver, 20)
+
+# =========================
+# INÍCIO DO FLUXO
+# =========================
+
+
+    log("INICIANDO AMBIENTE")
+    iniciar_ambiente(homologacao, driver)
+
+    log("CONFIRMANDO BASE")
+    if confirmaBase(driver, wait):
+        break
+    else:    
+        driver.quit()
+        time.sleep(2)
+
+log("REALIZANDO LOGIN")
+login(driver, wait, credenciais)
+
+log("SELECIONANDO AMBIENTE 02")
+sel_ambiente(driver, wait, "2", homologacao, DataRetroativaBool, DataRetroativa)
+
+
+
+log("FINALIZANDO")
+time.sleep(5)
+driver.quit()
+log("FINALIZADO")

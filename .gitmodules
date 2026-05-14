@@ -1,0 +1,3 @@
+[submodule "Biblioteca_Protheus"]
+	path = Biblioteca_Protheus
+	url = https://github.com/DalbaEngenharia/Biblioteca_Protheus.git
