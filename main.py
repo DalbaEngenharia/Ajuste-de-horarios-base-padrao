@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-
+import selecao_grupos
 # NOVO (auto driver)
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -39,6 +39,7 @@ if habilitar_retroativo:
 else: 
     DataRetroativaBool = None
     DataRetroativa = None
+
 # =========================
 # CORREÇÃO CRÍTICA (AGENDADOR)
 # =========================
@@ -70,15 +71,15 @@ chrome_options.add_argument(f"--user-data-dir={profile_path}")
 if not homologacao and teste == 0:
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--window-size=1920,1080")
-    credenciais = ["robo", "robo2025"]
+    credenciais = ["robo.horarios", "rbhr2026"]
 
 elif not homologacao and teste == 1:
     chrome_options.add_argument("--start-maximized")
-    credenciais = ["robo", "robo2025"]
+    credenciais = ["robo.horarios", "rbhr2026"]
 
 else:
     chrome_options.add_argument("--start-maximized")
-    credenciais = ["gustavo.elicker", "123abc"]
+    credenciais = ["robo.horarios", "rbhr2026"]
 
 # =========================
 # ESTABILIDADE
@@ -135,9 +136,8 @@ while True:
 
     log("INICIANDO AMBIENTE")
     iniciar_ambiente(homologacao, driver)
-
     log("CONFIRMANDO BASE")
-    if confirmaBase(driver, wait):
+    if confirmaBase(driver, wait, valor="SIGACFG"):
         break
     else:    
         driver.quit()
@@ -146,12 +146,20 @@ while True:
 log("REALIZANDO LOGIN")
 login(driver, wait, credenciais)
 
+funcao_tres_e_demais(driver,"wa-button", "Fechar")
 log("SELECIONANDO AMBIENTE 02")
-sel_ambiente(driver, wait, "2", homologacao, DataRetroativaBool, DataRetroativa)
-
-
-
+sel_ambiente(driver, wait, "02", homologacao, DataRetroativaBool, DataRetroativa,ambiente_padrão=False)
+try: 
+    funcao_tres_e_demais(driver, "wa-button", "Confirmar")
+except: 
+    None
+menus_acesso = ["U","Senhas", "Grupos"]
+for menu in menus_acesso: 
+    funcao_tres_e_demais(driver, "wa-menu-item", menu)
+selecao_grupos.selecao_grupo(driver)
 log("FINALIZANDO")
+
+encerrar_sistema(driver)
 time.sleep(5)
 driver.quit()
 log("FINALIZADO")
