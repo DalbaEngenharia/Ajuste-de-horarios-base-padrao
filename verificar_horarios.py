@@ -1,5 +1,6 @@
-from Biblioteca_Protheus.tabelas.tabelas_protheus import * 
+from Biblioteca_Protheus.Biblioteca_Protheus.tabelas.tabelas_protheus import * 
 from listas import horario_base_aceito, horario_base_block
+from datetime import datetime
 
 def atualizar_horario(driver, id_tabela, coluna, valor, indice):
     
@@ -27,9 +28,10 @@ def atualizar_horario(driver, id_tabela, coluna, valor, indice):
 
     return False
 
+from datetime import datetime
 
-def dados_horarios(driver):
-
+def dados_horarios(driver,dados_json):
+    print("dados json: ", dados_json)
     print("____________________________________________________")
 
     id_tabela_horarios = "COMP7660"
@@ -39,24 +41,52 @@ def dados_horarios(driver):
 
     total_linhas = len(horas)
     alterado = False
+
+    inicio = datetime.strptime("06:00", "%H:%M").time()
+    fim = datetime.strptime("19:00", "%H:%M").time()
+
     for indice in range(total_linhas):
         print("Horas: ", horas[indice])
         dia = horas[indice][0]
         print("Dia", dia)
-        if dia in ["Domingo", "Sábado"]:
-            hora_inicio = horario_base_block[0]
-            hora_final = horario_base_block[1]
-        else:
-            hora_inicio = horario_base_aceito[0]
-            hora_final = horario_base_aceito[1]
-        print("____________________________________________________")
-        if horas[indice][1] != hora_inicio:
-            atualizar_horario(driver,id_tabela_horarios,1,hora_inicio,indice)
-            alterado = True
-        time.sleep(2)
-        if horas[indice][2] != hora_final:
-            atualizar_horario(driver,id_tabela_horarios,2,hora_final,indice)
-            alterado = True
+        horario_inicio_alterado = False
+        horario_final_alterado = False
+        if dia in dados_json:
+
+            if dia not in ["Sábado", "Domingo"]: 
+                hora1 = datetime.strptime(dados_json[dia][0], "%H:%M").time()
+                hora2 = datetime.strptime(dados_json[dia][1], "%H:%M").time()
+      
+                if hora1 > inicio: 
+                    hora1 = inicio
+                    horario_inicio_alterado = True
+                if hora2 < fim: 
+                    hora2 = fim
+                    horario_final_alterado = True
+    
+            if hora1 > hora2:     
+                continue
+            
+            if horario_inicio_alterado:
+                hora_inicio = hora1.strftime("%H:%M")
+            else:
+                hora_inicio = dados_json[dia][0]
+
+            if horario_final_alterado:
+                hora_final = hora2.strftime("%H:%M")
+            else:
+                hora_final = dados_json[dia][1]
+
+            print("____________________________________________________")
+            if horas[indice][1] != hora_inicio:
+                atualizar_horario(driver,id_tabela_horarios,1,hora_inicio,indice)
+                alterado = True
+            time.sleep(2)
+            if horas[indice][2] != hora_final:
+                atualizar_horario(driver,id_tabela_horarios,2,hora_final,indice)
+                alterado = True
+        else: 
+            continue
     if alterado: 
         funcao_tres_e_demais(driver, "wa-button", "Confirmar")
         funcao_tres_e_demais(driver, "wa-button", "Fechar")
