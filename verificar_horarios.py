@@ -1,4 +1,4 @@
-from Biblioteca_Protheus.Biblioteca_Protheus.tabelas.tabelas_protheus import * 
+from Biblioteca_Protheus.tabelas.tabelas_protheus import * 
 from listas import horario_base_aceito, horario_base_block
 from datetime import datetime
 
@@ -52,10 +52,10 @@ def dados_horarios(driver,dados_json):
         horario_inicio_alterado = False
         horario_final_alterado = False
         if dia in dados_json:
-
+            hora1 = datetime.strptime(dados_json[dia][0], "%H:%M").time()
+            hora2 = datetime.strptime(dados_json[dia][1], "%H:%M").time()
             if dia not in ["Sábado", "Domingo"]: 
-                hora1 = datetime.strptime(dados_json[dia][0], "%H:%M").time()
-                hora2 = datetime.strptime(dados_json[dia][1], "%H:%M").time()
+               
       
                 if hora1 > inicio: 
                     hora1 = inicio
