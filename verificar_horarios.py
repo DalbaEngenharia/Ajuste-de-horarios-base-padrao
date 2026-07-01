@@ -1,4 +1,4 @@
-from Biblioteca_Protheus.tabelas.tabelas_protheus import * 
+from biblioteca_protheus.tabelas.tabelas_protheus import *
 from listas import horario_base_aceito, horario_base_block
 from datetime import datetime
 
@@ -44,7 +44,7 @@ def dados_horarios(driver,dados_json):
 
     inicio = datetime.strptime("06:00", "%H:%M").time()
     fim = datetime.strptime("19:00", "%H:%M").time()
-
+    # loop para ler tabela de horarios  
     for indice in range(total_linhas):
         print("Horas: ", horas[indice])
         dia = horas[indice][0]
@@ -55,8 +55,7 @@ def dados_horarios(driver,dados_json):
             hora1 = datetime.strptime(dados_json[dia][0], "%H:%M").time()
             hora2 = datetime.strptime(dados_json[dia][1], "%H:%M").time()
             if dia not in ["Sábado", "Domingo"]: 
-               
-      
+                     
                 if hora1 > inicio: 
                     hora1 = inicio
                     horario_inicio_alterado = True
@@ -86,7 +85,19 @@ def dados_horarios(driver,dados_json):
                 atualizar_horario(driver,id_tabela_horarios,2,hora_final,indice)
                 alterado = True
         else: 
-            continue
+            if dia in ["Sábado", "Domingo"]: 
+                if  horas[indice][1] != "00:00": 
+                    atualizar_horario(driver,id_tabela_horarios,1,"00:00",indice)
+                if horas[indice][2] != "23:59":
+                    atualizar_horario(driver,id_tabela_horarios,2,"23:59",indice)
+            else: 
+                if  horas[indice][1] != "06:00": 
+                    atualizar_horario(driver,id_tabela_horarios,1,"06:00",indice)
+                if horas[indice][2] != "19:00":
+                    atualizar_horario(driver,id_tabela_horarios,2,"19:00",indice) 
+            #continue
+
+
     if alterado: 
         funcao_tres_e_demais(driver, "wa-button", "Confirmar")
         funcao_tres_e_demais(driver, "wa-button", "Fechar")
