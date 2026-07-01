@@ -1,5 +1,6 @@
 from biblioteca_protheus.tabelas.tabelas_protheus import *
 from listas import horario_base_aceito, horario_base_block
+import time
 from datetime import datetime
 
 def atualizar_horario(driver, id_tabela, coluna, valor, indice):

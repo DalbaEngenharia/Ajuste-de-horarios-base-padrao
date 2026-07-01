@@ -39,7 +39,7 @@ def safe_get(driver, url, tentativas=3):
 # =========================
 # DADOS JSON
 # =========================
-teste_local = 1
+teste_local = 0
 
 if teste_local == 0:
     raw = sys.argv[1].strip()
@@ -67,7 +67,7 @@ else:
 usuario = dados_json["user"]
 id_grupo = encontrar_id_grupo(dados_json['user'])
 homologacao = False
-teste = 1
+teste = 0
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(base_dir)
@@ -231,7 +231,7 @@ dados_horarios(driver, dados_json)
 data = datetime.today().strftime("%d/%m/%Y")
 
 
-arquivo = r"C:\Users\gustavo.elicker\Desktop\Arquivos_compartilhados\horarios.csv"
+arquivo = r"C:\Users\DALBAPY\Desktop\Documento_compartilhado\horarios.csv"
 data = datetime.today().strftime("%d/%m/%Y")
 
 linhas = []
