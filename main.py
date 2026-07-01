@@ -1,8 +1,10 @@
+from biblioteca_protheus import * 
 import os
 import sys
 import time
 import json
-
+import csv
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -10,12 +12,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-
 from selenium.common.exceptions import TimeoutException, WebDriverException
-
 from webdriver_manager.chrome import ChromeDriverManager
-
-from Biblioteca_Protheus.Protheus_Biblioteca import *
 from encontrar_id_grupo import *
 from verificar_horarios import dados_horarios
 
@@ -41,7 +39,7 @@ def safe_get(driver, url, tentativas=3):
 # =========================
 # DADOS JSON
 # =========================
-teste_local = 0
+teste_local = 1
 
 if teste_local == 0:
     raw = sys.argv[1].strip()
@@ -55,21 +53,21 @@ if teste_local == 0:
     print("TESTE DE RECEBIDO: ", dados_json)
 else:
     dados_json =  {
-        "user":"gustavo.elicker",
-
-        "Domingo":["00:00","23:00"],
-
+        "user":"caue.pereira",
+        # "user":"gustavo.elicker",
+        "Segunda":["00:00","23:00"],
         "Terça":["08:00","22:00"],
-
-        "Sábado":["12:00","14:00"]
+        "Quarta":["12:00","14:00"]
 
         }
 
 # =========================
 # CONFIG
 # =========================
+usuario = dados_json["user"]
+id_grupo = encontrar_id_grupo(dados_json['user'])
 homologacao = False
-teste = 0
+teste = 1
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(base_dir)
@@ -230,7 +228,41 @@ driver.find_element(By.ID, "BUTTON-COMP7520").click()
 # HORÁRIOS
 # =========================
 dados_horarios(driver, dados_json)
+data = datetime.today().strftime("%d/%m/%Y")
 
+
+arquivo = r"C:\Users\gustavo.elicker\Desktop\Arquivos_compartilhados\horarios.csv"
+data = datetime.today().strftime("%d/%m/%Y")
+
+linhas = []
+encontrou = False
+
+if os.path.exists(arquivo):
+    with open(arquivo, "r", newline="", encoding="utf-8") as csvfile:
+        leitor = csv.reader(csvfile, delimiter=";")
+
+        for i, linha in enumerate(leitor):
+            # Ignora o cabeçalho
+            if i == 0:
+                continue
+
+            if linha and linha[0] == id_grupo:
+                linhas.append([id_grupo, usuario, data])
+                encontrou = True
+            else:
+                linhas.append(linha)
+
+if not encontrou:
+    linhas.append([id_grupo, usuario, data])
+
+with open(arquivo, "w", newline="", encoding="utf-8") as csvfile:
+    escritor = csv.writer(csvfile, delimiter=";")
+
+    # Cabeçalho
+    escritor.writerow(["id", "usuario", "data"])
+
+    # Dados
+    escritor.writerows(linhas)
 
 # =========================
 # FINALIZAÇÃO
