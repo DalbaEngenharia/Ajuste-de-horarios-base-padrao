@@ -31,8 +31,7 @@ def atualizar_horario(driver, id_tabela, coluna, valor, indice):
 
 from datetime import datetime
 
-def dados_horarios(driver,dados_json):
-    print("dados json: ", dados_json)
+def dados_horarios(driver):
     print("____________________________________________________")
 
     id_tabela_horarios = "COMP7660"
@@ -43,60 +42,25 @@ def dados_horarios(driver,dados_json):
     total_linhas = len(horas)
     alterado = False
 
-    inicio = datetime.strptime("06:00", "%H:%M").time()
-    fim = datetime.strptime("19:00", "%H:%M").time()
+    
     # loop para ler tabela de horarios  
     for indice in range(total_linhas):
-        print("Horas: ", horas[indice])
-        dia = horas[indice][0]
-        print("Dia", dia)
-        horario_inicio_alterado = False
-        horario_final_alterado = False
-        if dia in dados_json:
-            hora1 = datetime.strptime(dados_json[dia][0], "%H:%M").time()
-            hora2 = datetime.strptime(dados_json[dia][1], "%H:%M").time()
-            if dia not in ["Sábado", "Domingo"]: 
-                     
-                if hora1 > inicio: 
-                    hora1 = inicio
-                    horario_inicio_alterado = True
-                if hora2 < fim: 
-                    hora2 = fim
-                    horario_final_alterado = True
-    
-            if hora1 > hora2:     
-                continue
-            
-            if horario_inicio_alterado:
-                hora_inicio = hora1.strftime("%H:%M")
-            else:
-                hora_inicio = dados_json[dia][0]
-
-            if horario_final_alterado:
-                hora_final = hora2.strftime("%H:%M")
-            else:
-                hora_final = dados_json[dia][1]
-
-            print("____________________________________________________")
-            if horas[indice][1] != hora_inicio:
-                atualizar_horario(driver,id_tabela_horarios,1,hora_inicio,indice)
+        print("horas: ", horas[indice])
+        if horas[indice][0] not in ["Sábado", "Domingo"]: 
+            if horas[indice][1] != horario_base_aceito[0]:
+                atualizar_horario(driver,id_tabela_horarios,1,horario_base_aceito[0],indice)
                 alterado = True
-            time.sleep(2)
-            if horas[indice][2] != hora_final:
-                atualizar_horario(driver,id_tabela_horarios,2,hora_final,indice)
+            if horas[indice][2] != horario_base_aceito[1]:
+                atualizar_horario(driver,id_tabela_horarios,2,horario_base_aceito[1],indice)
                 alterado = True
         else: 
-            if dia in ["Sábado", "Domingo"]: 
-                if  horas[indice][1] != "00:00": 
-                    atualizar_horario(driver,id_tabela_horarios,1,"00:00",indice)
-                if horas[indice][2] != "23:59":
-                    atualizar_horario(driver,id_tabela_horarios,2,"23:59",indice)
-            else: 
-                if  horas[indice][1] != "06:00": 
-                    atualizar_horario(driver,id_tabela_horarios,1,"06:00",indice)
-                if horas[indice][2] != "19:00":
-                    atualizar_horario(driver,id_tabela_horarios,2,"19:00",indice) 
-            #continue
+            if horas[indice][1] != horario_base_block[0]:
+                atualizar_horario(driver,id_tabela_horarios,1,horario_base_block[0],indice)
+                alterado = True
+            if horas[indice][2] != horario_base_block[0]:
+                atualizar_horario(driver,id_tabela_horarios,2,horario_base_block[1],indice)
+                alterado = True
+        None
 
 
     if alterado: 

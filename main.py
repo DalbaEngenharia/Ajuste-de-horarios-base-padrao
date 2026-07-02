@@ -4,7 +4,6 @@ import sys
 import time
 import json
 import csv
-from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -14,7 +13,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
-from encontrar_id_grupo import *
 from verificar_horarios import dados_horarios
 
 
@@ -37,37 +35,10 @@ def safe_get(driver, url, tentativas=3):
 
 
 # =========================
-# DADOS JSON
-# =========================
-teste_local = 0
-
-if teste_local == 0:
-    raw = sys.argv[1].strip()
-
-    start = raw.find('{')
-    end = raw.rfind('}')
-
-    json_str = raw[start:end + 1]
-    dados_json = json.loads(json_str)
-
-    print("TESTE DE RECEBIDO: ", dados_json)
-else:
-    dados_json =  {
-        "user":"caue.pereira",
-        # "user":"gustavo.elicker",
-        "Segunda":["00:00","23:00"],
-        "Terça":["08:00","22:00"],
-        "Quarta":["12:00","14:00"]
-
-        }
-
-# =========================
 # CONFIG
 # =========================
-usuario = dados_json["user"]
-id_grupo = encontrar_id_grupo(dados_json['user'])
 homologacao = False
-teste = 0
+teste = 1
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(base_dir)
@@ -208,65 +179,48 @@ for menu in menus_acesso:
 # =========================
 # GRUPO
 # =========================
-print(dados_json)
-id_grupo = encontrar_id_grupo(dados_json['user'])
-print("ID GRUPO:", id_grupo)
 
-inserir_texto(driver, "COMP7503", id_grupo)
+arquivo = r"C:\Users\gustavo.elicker\Desktop\Arquivos_compartilhados\horarios.csv"
 
-funcao_tres_e_demais(driver, "wa-button", "Confirmar")
+with open(arquivo, newline="", encoding="utf-8") as f:
+    reader = csv.reader(f,delimiter=";")
+    next(reader)
+    for linha in reader:
 
-esperar_existir(driver, "wa-button", "I")
-funcao_tres_e_demais(driver, "wa-button", "A")
+        id_grupo = linha[0]
+        print("linha tabela: ", id_grupo)
 
-esperar_existir(driver, "wa-button", "Confirmar")
+        inserir_texto(driver, "COMP7503", id_grupo)
 
-driver.find_element(By.ID, "BUTTON-COMP7520").click()
+        funcao_tres_e_demais(driver, "wa-button", "Confirmar")
+
+        esperar_existir(driver, "wa-button", "I")
+        funcao_tres_e_demais(driver, "wa-button", "A")
+
+        esperar_existir(driver, "wa-button", "Confirmar")
+
+        driver.find_element(By.ID, "BUTTON-COMP7520").click()
 
 
-# =========================
-# HORÁRIOS
-# =========================
-dados_horarios(driver, dados_json)
-data = datetime.today().strftime("%d/%m/%Y")
+        # =========================
+        # HORÁRIOS
+        # =========================
+        dados_horarios(driver)
+        esperar_existir(driver, "wa-button", "I")
+        time.sleep(5)
+        driver.find_element(By.ID, "COMP6024").click()
+        time.sleep(5)
+        funcao_tres_e_demais(driver,"wa-button","Aplicar")
+        time.sleep(5)
+        None
+with open(arquivo, "w", newline="", encoding="utf-8") as arquivo:
+    pass
 
-
-arquivo = r"C:\Users\DALBAPY\Desktop\Documento_compartilhado\horarios.csv"
-data = datetime.today().strftime("%d/%m/%Y")
-
-linhas = []
-encontrou = False
-
-if os.path.exists(arquivo):
-    with open(arquivo, "r", newline="", encoding="utf-8") as csvfile:
-        leitor = csv.reader(csvfile, delimiter=";")
-
-        for i, linha in enumerate(leitor):
-            # Ignora o cabeçalho
-            if i == 0:
-                continue
-
-            if linha and linha[0] == id_grupo:
-                linhas.append([id_grupo, usuario, data])
-                encontrou = True
-            else:
-                linhas.append(linha)
-
-if not encontrou:
-    linhas.append([id_grupo, usuario, data])
-
-with open(arquivo, "w", newline="", encoding="utf-8") as csvfile:
-    escritor = csv.writer(csvfile, delimiter=";")
-
-    # Cabeçalho
-    escritor.writerow(["id", "usuario", "data"])
-
-    # Dados
-    escritor.writerows(linhas)
 
 # =========================
 # FINALIZAÇÃO
 # =========================
+funcao_tres_e_demais(driver,"wa-button","Cancelar")
 log("FINALIZANDO")
 
 time.sleep(5)
