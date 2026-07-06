@@ -84,7 +84,7 @@ prefs = {"profile.default_content_setting_values.notifications": 2}
 chrome_options.add_experimental_option("prefs", prefs)
 
 
-credenciais = ["robo.horarios", "rbhr2026"]
+credenciais = ["robo.horarios", "Abc123!@#"]
 
 
 # =========================
@@ -180,7 +180,7 @@ for menu in menus_acesso:
 # GRUPO
 # =========================
 
-arquivo = r"C:\Users\gustavo.elicker\Desktop\Arquivos_compartilhados\horarios.csv"
+arquivo = r"C:\Users\DALBAPY\Desktop\Documento_compartilhado\horarios.csv"
 
 with open(arquivo, newline="", encoding="utf-8") as f:
     reader = csv.reader(f,delimiter=";")
